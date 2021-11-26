@@ -80,7 +80,7 @@ public class GXExceptionHandler {
         }
         log.error(e.getMessage(), e);
         Object orDefault = errors.getOrDefault(firstKey, "");
-        return GXResultUtils.error(GXResultCode.PARAMETER_VALIDATION_ERROR.getCode(), GXResultCode.PARAMETER_VALIDATION_ERROR.getMsg() + " : " + orDefault);
+        return GXResultUtils.error(GXResultCode.PARAMETER_VALIDATION_ERROR.getCode(), GXResultCode.PARAMETER_VALIDATION_ERROR.getMsg() + " : " + firstKey + "->" + orDefault);
     }
 
     @ExceptionHandler(ValidationException.class)
