@@ -1,5 +1,7 @@
 package cn.maple.core.framework.dto;
 
+import cn.hutool.core.bean.copier.CopyOptions;
+
 import java.io.Serializable;
 
 public abstract class GXBaseData implements Serializable {
@@ -23,6 +25,20 @@ public abstract class GXBaseData implements Serializable {
      * 验证请求参数之后进行数据修复(自动填充一些信息)
      */
     protected void afterRepair() {
+    }
+
+    /**
+     * 转换之前的回调
+     */
+    protected void beforeMapping(CopyOptions copyOptions) {
+        customizeProcess();
+    }
+
+    /**
+     * 转换完成之后的回调
+     */
+    protected void afterMapping(Object source) {
+        customizeProcess();
     }
 
     /**

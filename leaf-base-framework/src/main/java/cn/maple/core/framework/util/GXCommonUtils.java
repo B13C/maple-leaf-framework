@@ -370,47 +370,54 @@ public class GXCommonUtils {
      * {@code}
      * eg:
      * Dict source = Dict.create().set("username","britton").set("realName","枫叶思源");
-     * convertSourceToTarget( source , PersonResDto.class);
+     * convertSourceToTarget( source , PersonResDto.class, "customerProcess" , null);
      * OR
      * PersonReqProtocol req = new PersonReqProtocol();
      * req.setUsername("britton");
      * req.setRealName("枫叶思源")；
-     * convertSourceToTarget(req ,  PersonResDto.class);
+     * convertSourceToTarget(req ,  PersonResDto.class, "customerProcess" , null);
      * {code}
      *
-     * @param source           源对象
-     * @param clazz            目标对象类型
-     * @param methodName       需要条用的方法名字
-     * @param ignoreProperties 需要忽略的属性
+     * @param source      源对象
+     * @param tClass      目标对象类型
+     * @param methodName  需要条用的方法名字
+     * @param copyOptions 复制选项
      * @return 目标对象
      */
-    public static <R> R convertSourceToTarget(Object source, Class<R> clazz, String methodName, String... ignoreProperties) {
+    public static <S, T> T convertSourceToTarget(S source, Class<T> tClass, String methodName, CopyOptions copyOptions) {
         if (Objects.isNull(source)) {
             LOG.info("源对象不能为null");
             return null;
         }
-        R r = BeanUtil.copyProperties(source, clazz, ignoreProperties);
-        reflectCallObjectMethod(r, methodName);
-        return r;
+        copyOptions = ObjectUtil.defaultIfNull(copyOptions, CopyOptions.create());
+        reflectCallObjectMethod(source, "beforeMapping", copyOptions);
+        T target = ReflectUtil.newInstanceIfPossible(tClass);
+        reflectCallObjectMethod(target, "beforeMapping", copyOptions);
+        BeanUtil.copyProperties(source, target, copyOptions);
+        reflectCallObjectMethod(target, "afterMapping", source);
+        if (CharSequenceUtil.isNotEmpty(methodName)) {
+            reflectCallObjectMethod(target, methodName);
+        }
+        return target;
     }
 
     /**
      * 将任意对象转换为指定类型的对象
      *
      * @param collection  需要转换的对象列表
-     * @param clazz       目标对象的类型
+     * @param tClass      目标对象的类型
      * @param methodName  需要条用的方法名字
      * @param copyOptions 需要拷贝的选项
      * @return List
      */
-    public static <R> List<R> convertSourceListToTargetList(Collection<?> collection, Class<R> clazz, String methodName, CopyOptions copyOptions) {
+    @SuppressWarnings("all")
+    public static <R> List<R> convertSourceListToTargetList(Collection<?> collection, Class<R> tClass, String methodName, CopyOptions copyOptions) {
         if (CollUtil.isEmpty(collection)) {
             LOG.info("源对象不能为null");
             return Collections.emptyList();
         }
-        List<R> rs = BeanUtil.copyToList(collection, clazz, copyOptions);
-        rs.forEach(r -> reflectCallObjectMethod(r, methodName));
-        return rs;
+        List<R> rList = collection.stream().map((source) -> convertSourceToTarget(source, tClass, methodName, copyOptions)).collect(Collectors.toList());
+        return rList;
     }
 
     /**
@@ -425,7 +432,14 @@ public class GXCommonUtils {
         if (CharSequenceUtil.isEmpty(methodName)) {
             methodName = "customizeProcess";
         }
-        Method method = ReflectUtil.getMethod(object.getClass(), methodName);
+        if (params == null) {
+            params = new Object[0];
+        }
+        Class<?>[] classes = new Class<?>[params.length];
+        for (int i = 0; i < params.length; i++) {
+            classes[i] = params[i].getClass();
+        }
+        Method method = ReflectUtil.getMethod(object.getClass(), methodName, classes);
         Object retVal = null;
         if (Objects.nonNull(method)) {
             try {
@@ -657,5 +671,50 @@ public class GXCommonUtils {
      */
     public static long getCurrentSessionUserId() {
         return 0L;
+    }
+
+    /**
+     * 构建菜单树
+     *
+     * @param sourceList      源列表
+     * @param rootParentValue 根父级的值, 一般是 0
+     * @param <R>             返回的数据类型
+     * @return 列表
+     */
+    public static <R> List<R> buildDeptTree(List<R> sourceList, Object rootParentValue) {
+        // JDK8的stream处理, 把根分类区分出来
+        List<R> roots = sourceList.stream().filter(obj -> {
+            Object parentId = GXCommonUtils.reflectCallObjectMethod(obj, "getParentId");
+            return Objects.equals(parentId, rootParentValue);
+        }).collect(Collectors.toList());
+        // 把非根分类区分出来
+        List<R> subs = sourceList.stream().filter(obj -> {
+            Object parentId = GXCommonUtils.reflectCallObjectMethod(obj, "getParentId");
+            return !Objects.equals(parentId, rootParentValue);
+        }).collect(Collectors.toList());
+        // 递归构建结构化的分类信息
+        roots.forEach(root -> buildSubs(root, subs));
+        return roots;
+    }
+
+    /**
+     * 构建菜单树的子级
+     *
+     * @param parent 父结点
+     * @param subs   子结点
+     * @param <R>    元素类型
+     */
+    private static <R> void buildSubs(R parent, List<R> subs) {
+        List<R> children = subs.stream().filter(sub -> {
+            Object parentId = GXCommonUtils.reflectCallObjectMethod(sub, "getParentId");
+            Object id = GXCommonUtils.reflectCallObjectMethod(parent, "getId");
+            return Objects.equals(parentId, id);
+        }).collect(Collectors.toList());
+        if (!CollUtil.isEmpty(children)) {
+            // 有子分类的情况
+            GXCommonUtils.reflectCallObjectMethod(parent, "setChildren", children);
+            // 再次递归构建
+            children.forEach(child -> buildSubs(child, subs));
+        }
     }
 }

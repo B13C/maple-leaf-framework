@@ -24,7 +24,44 @@ public interface GXBaseController {
      * @return T
      */
     default <S, Q> Q convertSourceToTarget(S source, Class<Q> clazz) {
-        return GXCommonUtils.convertSourceToTarget(source, clazz, null);
+        return convertSourceToTarget(source, clazz, null, null);
+    }
+
+    /**
+     * 将源对象转换为目标对象
+     *
+     * @param source     源对象
+     * @param clazz      目标对象类型
+     * @param methodName 回调的方法名字
+     * @return T
+     */
+    default <S, Q> Q convertSourceToTarget(S source, Class<Q> clazz, String methodName) {
+        return convertSourceToTarget(source, clazz, methodName, null);
+    }
+
+    /**
+     * 将源对象转换为目标对象
+     *
+     * @param source      源对象
+     * @param clazz       目标对象类型
+     * @param copyOptions 复制选项
+     * @return T
+     */
+    default <S, Q> Q convertSourceToTarget(S source, Class<Q> clazz, CopyOptions copyOptions) {
+        return convertSourceToTarget(source, clazz, null, copyOptions);
+    }
+
+    /**
+     * 将源对象转换为目标对象
+     *
+     * @param source      源对象
+     * @param clazz       目标对象类型
+     * @param methodName  回调的方法名字
+     * @param copyOptions 复制选项
+     * @return T
+     */
+    default <S, Q> Q convertSourceToTarget(S source, Class<Q> clazz, String methodName, CopyOptions copyOptions) {
+        return GXCommonUtils.convertSourceToTarget(source, clazz, methodName, copyOptions);
     }
 
     /**
@@ -32,11 +69,23 @@ public interface GXBaseController {
      *
      * @param collection  需要转换的对象列表
      * @param clazz       目标对象的类型
+     * @param methodName  回调方法的名字
      * @param copyOptions 需要拷贝的选项
      * @return List
      */
-    default <S, Q> List<Q> convertSourceToTarget(Collection<S> collection, Class<Q> clazz, CopyOptions copyOptions) {
-        return GXCommonUtils.convertSourceListToTargetList(collection, clazz, null, copyOptions);
+    default <S, Q> List<Q> convertSourceListToTargetList(Collection<S> collection, Class<Q> clazz, String methodName, CopyOptions copyOptions) {
+        return GXCommonUtils.convertSourceListToTargetList(collection, clazz, methodName, copyOptions);
+    }
+
+    /**
+     * 将源对象转换为目标对象
+     *
+     * @param collection 需要转换的对象列表
+     * @param clazz      目标对象的类型
+     * @return List
+     */
+    default <S, Q> List<Q> convertSourceListToTargetList(Collection<S> collection, Class<Q> clazz) {
+        return GXCommonUtils.convertSourceListToTargetList(collection, clazz, null, null);
     }
 
     /**
@@ -77,5 +126,17 @@ public interface GXBaseController {
         long currentPage = pagination.getCurrentPage();
         List<T> list = mapStruct.sourceToTarget(records);
         return new GXPaginationResProtocol<>(list, total, pages, pageSize, currentPage);
+    }
+
+    /**
+     * 构建菜单树
+     *
+     * @param sourceList      源列表
+     * @param rootParentValue 根父级的值, 一般是 0
+     * @param <R>             返回的数据类型
+     * @return 列表
+     */
+    default <R extends GXBaseResProtocol> List<R> buildTree(List<R> sourceList, Object rootParentValue) {
+        return GXCommonUtils.buildDeptTree(sourceList, rootParentValue);
     }
 }

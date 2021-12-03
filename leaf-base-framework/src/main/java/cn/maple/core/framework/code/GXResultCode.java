@@ -1,6 +1,5 @@
 package cn.maple.core.framework.code;
 
-
 public enum GXResultCode {
     OK(200, "操作成功"),
     SMS_SEND_SUCCESS(200, "短信发送成功"),
