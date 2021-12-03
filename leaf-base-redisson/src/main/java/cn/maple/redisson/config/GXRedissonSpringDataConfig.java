@@ -17,7 +17,6 @@ import java.util.Map;
 
 @Configuration
 @ConditionalOnClass(name = {"org.redisson.Redisson"})
-//@ConditionalOnMissingClass(value = {"com.alibaba.nacos.api.config.ConfigFactory"})
 public class GXRedissonSpringDataConfig {
     @Resource
     private GXRedissonProperties redissonConfig;

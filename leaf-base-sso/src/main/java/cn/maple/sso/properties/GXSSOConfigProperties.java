@@ -14,7 +14,6 @@ import org.springframework.context.annotation.PropertySource;
         factory = GXYamlPropertySourceFactory.class,
         encoding = "utf-8",
         ignoreResourceNotFound = true)
-//@ConditionalOnMissingClass({"com.alibaba.nacos.api.config.ConfigFactory"})
 @ConfigurationProperties(prefix = "sso")
 public class GXSSOConfigProperties {
     @NestedConfigurationProperty

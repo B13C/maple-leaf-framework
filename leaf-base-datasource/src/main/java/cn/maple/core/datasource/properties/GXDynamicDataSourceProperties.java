@@ -19,7 +19,6 @@ import java.util.Map;
         factory = GXYamlPropertySourceFactory.class,
         ignoreResourceNotFound = false)
 @ConfigurationProperties(prefix = "dynamic")
-//@ConditionalOnMissingClass({"com.alibaba.nacos.api.config.ConfigFactory"})
 public class GXDynamicDataSourceProperties {
     protected Map<String, GXDataSourceProperties> datasource = new LinkedHashMap<>();
 }

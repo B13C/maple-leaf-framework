@@ -15,7 +15,6 @@ import java.util.Map;
 @Configuration
 @SuppressWarnings("all")
 @ConditionalOnClass(name = {"org.redisson.Redisson"})
-//@ConditionalOnMissingClass(value = {"com.alibaba.nacos.api.config.ConfigFactory"})
 @PropertySource(value = {"classpath:/redisson-cache-config.yml"},
         factory = GXYamlPropertySourceFactory.class,
         encoding = "utf-8",

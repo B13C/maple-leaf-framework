@@ -19,7 +19,6 @@ import java.util.Map;
         factory = GXYamlPropertySourceFactory.class,
         ignoreResourceNotFound = false)
 @ConfigurationProperties(prefix = "mongodb")
-//@ConditionalOnMissingClass({"com.alibaba.nacos.api.config.ConfigFactory"})
 public class GXMongoDynamicDataSourceProperties {
     protected Map<String, GXMongoDataSourceProperties> datasource = new LinkedHashMap<>();
 }
