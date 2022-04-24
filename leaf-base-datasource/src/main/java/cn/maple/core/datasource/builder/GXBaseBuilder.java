@@ -94,7 +94,7 @@ public interface GXBaseBuilder {
         // 处理WHERE
         handleSQLCondition(sql, condition);
         if (!CollUtil.contains(condition, (c -> GXConditionExclusionDeletedField.class.isAssignableFrom(c.getClass())))) {
-            sql.WHERE(CharSequenceUtil.format("{}.is_deleted = {}", tableName, getIsNotDeletedValue()));
+            sql.WHERE(CharSequenceUtil.format("{}.is_deleted = {}", tableNameAlias, getIsNotDeletedValue()));
         }
         // 处理分组
         if (CollUtil.isNotEmpty(groupByField)) {
